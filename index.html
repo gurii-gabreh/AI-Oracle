@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Oracle</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a3a;
+    --accent: #7c6af7;
+    --accent2: #4fd1c5;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --success: #48bb78;
+    --warning: #f6ad55;
+    --danger: #fc8181;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+  }
+
+  /* 設定パネル */
+  .settings-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .settings-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+  .settings-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.2s ease;
+  }
+  .settings-panel.open { display: block; }
+
+  .settings-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .settings-field {
+    flex: 1;
+    min-width: 200px;
+  }
+  .settings-field label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .settings-field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .settings-field input:focus { border-color: var(--accent); }
+
+  .save-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .save-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .key-status {
+    font-size: 0.72rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: rgba(72,187,120,0.08);
+    border: 1px solid rgba(72,187,120,0.2);
+    color: var(--success);
+    display: none;
+  }
+
+  /* 入力エリア */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.5s ease 0.1s both;
+  }
+
+  .input-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    padding: 1rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    min-height: 100px;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+  }
+
+  .char-count { font-size: 0.75rem; color: var(--muted); }
+
+  .ask-btn {
+    background: linear-gradient(135deg, var(--accent), #5a4fd4);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .ask-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124,106,247,0.35);
+  }
+  .ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* プロセス表示 */
+  .process-bar {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .process-bar.active { display: block; animation: fadeUp 0.3s ease; }
+
+  .process-steps { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .step.active { color: var(--accent2); border-color: var(--accent2); background: rgba(79,209,197,0.08); }
+  .step.done   { color: var(--success); border-color: var(--success); background: rgba(72,187,120,0.08); }
+
+  .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .step.active .step-dot { animation: pulse 1s infinite; }
+
+  /* 結果 */
+  .result-card { display: none; animation: fadeUp 0.4s ease; }
+  .result-card.visible { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .badge-high   { background: rgba(72,187,120,0.15); color: var(--success); border: 1px solid rgba(72,187,120,0.3); }
+  .badge-medium { background: rgba(246,173,85,0.15); color: var(--warning); border: 1px solid rgba(246,173,85,0.3); }
+  .badge-low    { background: rgba(252,129,129,0.15); color: var(--danger);  border: 1px solid rgba(252,129,129,0.3); }
+
+  .answer-text {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .meta-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+  }
+  .meta-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+  .meta-value { font-size: 0.85rem; color: var(--text); font-weight: 500; }
+
+  .contradiction-alert {
+    background: rgba(252,129,129,0.08);
+    border: 1px solid rgba(252,129,129,0.3);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.82rem;
+    color: var(--danger);
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .supplement-box {
+    background: rgba(79,209,197,0.06);
+    border: 1px solid rgba(79,209,197,0.2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--accent2);
+  }
+
+  /* 履歴 */
+  .history-section { margin-top: 2rem; }
+  .history-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.82rem;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .history-q { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; }
+
+  /* トースト */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    z-index: 999;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(12px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes spin     { to { transform: rotate(360deg); } }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  @media (max-width: 600px) {
+    .logo { font-size: 2rem; }
+    .meta-grid { grid-template-columns: 1fr 1fr; }
+    .settings-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">AI Oracle</div>
+    <div class="tagline">Gemini × OpenRouter · Multi-Model Intelligence</div>
+  </header>
+
+  <!-- API設定 -->
+  <button class="settings-toggle" onclick="toggleSettings()">⚙ API設定</button>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-row">
+      <div class="settings-field">
+        <label>Gemini API Key</label>
+        <input type="password" id="geminiKey" placeholder="AIza...">
+      </div>
+      <div class="settings-field">
+        <label>OpenRouter API Key</label>
+        <input type="password" id="openrouterKey" placeholder="sk-or-...">
+      </div>
+      <button class="save-btn" onclick="saveSettings()">保存</button>
+    </div>
+    <div class="key-status" id="keyStatus">✓ APIキーが保存されています</div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="input-section">
+    <div class="input-label">質問を入力　（Cmd+Enter で送信）</div>
+    <textarea
+      id="questionInput"
+      placeholder="何でも聞いてください。Geminiが最適なAIを選んで回答します..."
+      oninput="updateCharCount(this)"
+      onkeydown="handleKeydown(event)"
+    ></textarea>
+    <div class="input-footer">
+      <span class="char-count" id="charCount">0文字</span>
+      <button class="ask-btn" id="askBtn" onclick="ask()">回答を生成</button>
+    </div>
+  </div>
+
+  <!-- プロセス -->
+  <div class="process-bar" id="processBar">
+    <div class="process-steps">
+      <div class="step" id="step1"><div class="step-dot"></div>質問分析</div>
+      <div class="step" id="step2"><div class="step-dot"></div>モデル選択</div>
+      <div class="step" id="step3"><div class="step-dot"></div>AI回答生成</div>
+      <div class="step" id="step4"><div class="step-dot"></div>矛盾チェック</div>
+      <div class="step" id="step5"><div class="step-dot"></div>最終出力</div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="result-card" id="resultCard">
+    <div class="meta-grid" id="metaGrid"></div>
+    <div class="contradiction-alert" id="contradictionAlert" style="display:none">
+      ⚠ <span id="contradictionText"></span>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">最終回答</span>
+        <span class="badge" id="confidenceBadge"></span>
+      </div>
+      <div class="answer-text" id="finalAnswer"></div>
+      <div class="supplement-box" id="supplementBox" style="display:none"></div>
+    </div>
+    <details style="margin-bottom:1rem">
+      <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted);padding:0.5rem 0">
+        AIの元回答を表示
+      </summary>
+      <div class="card" style="margin-top:0.5rem;border-color:rgba(255,255,255,0.05)">
+        <div class="card-title" style="margin-bottom:0.75rem">OpenRouter 生回答</div>
+        <div class="answer-text" id="mainAnswer" style="color:var(--muted)"></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="history-title">最近の質問</div>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// 設定・APIキー管理
+// ═══════════════════════════════════════
+const STORAGE_KEY = 'ai_oracle_keys';
+const HISTORY_KEY = 'ai_oracle_history';
+
+// OpenRouterの無料モデル
+const MODELS = {
+  general:   'meta-llama/llama-4-maverick:free',
+  reasoning: 'deepseek/deepseek-r1:free',
+  japanese:  'google/gemma-3-27b-it:free',
+  code:      'qwen/qwen3-14b:free',
+  fast:      'mistralai/mistral-small-3.1-24b-instruct:free',
+};
+
+function getKeys() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.classList.toggle('open');
+  const keys = getKeys();
+  if (keys.gemini)      document.getElementById('geminiKey').value = keys.gemini;
+  if (keys.openrouter)  document.getElementById('openrouterKey').value = keys.openrouter;
+  const status = document.getElementById('keyStatus');
+  status.style.display = (keys.gemini && keys.openrouter) ? 'block' : 'none';
+}
+
+function saveSettings() {
+  const keys = {
+    gemini:     document.getElementById('geminiKey').value.trim(),
+    openrouter: document.getElementById('openrouterKey').value.trim(),
+  };
+  if (!keys.gemini || !keys.openrouter) {
+    showToast('両方のAPIキーを入力してください');
+    return;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+  document.getElementById('settingsPanel').classList.remove('open');
+  showToast('✓ APIキーを保存しました');
+}
+
+// ═══════════════════════════════════════
+// Gemini API呼び出し（直接）
+// ═══════════════════════════════════════
+async function callGemini(prompt, useGrounding = false) {
+  const { gemini } = getKeys();
+  const model = 'gemini-2.0-flash';
+  const url   = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini}`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
+  };
+  if (useGrounding) body.tools = [{ googleSearch: {} }];
+
+  const res  = await fetch(url, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Gemini APIエラー: ${res.status}`);
+  const data = await res.json();
+  return data.candidates[0].content.parts.map(p => p.text || '').join('').trim();
+}
+
+// ═══════════════════════════════════════
+// OpenRouter API呼び出し（直接）
+// ═══════════════════════════════════════
+async function callOpenRouter(prompt, modelKey) {
+  const { openrouter } = getKeys();
+  const model = MODELS[modelKey] || MODELS.general;
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${openrouter}`,
+      'HTTP-Referer':  window.location.href,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2048,
+      temperature: 0.3,
+    }),
+  });
+  if (!res.ok) throw new Error(`OpenRouter APIエラー: ${res.status}`);
+  const data = await res.json();
+  return data.choices[0].message.content.trim();
+}
+
+// ═══════════════════════════════════════
+// Step1: Geminiが質問を分析
+// ═══════════════════════════════════════
+async function analyzeQuestion(question) {
+  const prompt = `以下の質問を分析して最適なAIモデルを選んでください。
+
+質問: ${question}
+
+以下のJSON形式のみで返してください（説明不要）:
+{
+  "category": "general/reasoning/japanese/code/fast のいずれか",
+  "reason": "選んだ理由（20文字以内）",
+  "search_needed": true/false,
+  "search_query": "Web検索が必要な場合の検索ワード（不要な場合は空文字）"
+}
+
+カテゴリの基準:
+- general: 一般的な質問・知識
+- reasoning: 論理・数学・分析
+- japanese: 日本語・文化・ビジネス文書
+- code: プログラミング・技術
+- fast: 簡単な質問・要約`;
+
+  const text  = await callGemini(prompt);
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end   = clean.lastIndexOf('}') + 1;
+  return JSON.parse(clean.slice(start, end));
+}
+
+// ═══════════════════════════════════════
+// Step2: Web検索（Gemini Grounding）
+// ═══════════════════════════════════════
+async function searchWeb(query) {
+  return await callGemini(
+    `以下について最新情報を検索して要約してください: ${query}`,
+    true
+  );
+}
+
+// ═══════════════════════════════════════
+// Step3: OpenRouterでメイン回答
+// ═══════════════════════════════════════
+async function getMainAnswer(question, modelKey, searchResult) {
+  const context = searchResult ? `\n\n参考情報（Web検索結果）:\n${searchResult}` : '';
+  return await callOpenRouter(
+    `以下の質問に対して正確で詳しい回答をしてください。${context}\n\n質問: ${question}\n\n回答は日本語でお願いします。`,
+    modelKey
+  );
+}
+
+// ═══════════════════════════════════════
+// Step4: Geminiで矛盾チェック・最終回答
+// ═══════════════════════════════════════
+async function checkAndFinalize(question, answer, searchResult) {
+  const prompt = `以下の質問と回答を精査してください。
+
+質問: ${question}
+
+AI回答:
+${answer}
+
+${searchResult ? `参考情報（Web検索）:\n${searchResult}` : ''}
+
+以下のJSON形式のみで返してください:
+{
+  "has_contradiction": true/false,
+  "contradiction_detail": "矛盾点の説明（なければ空文字）",
+  "confidence": "high/medium/low",
+  "final_answer": "矛盾を修正した最終回答（矛盾がなければ元の回答をそのまま）",
+  "supplement": "補足情報があれば（なければ空文字）"
+}`;
+
+  const text  = await callGemini(prompt);
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end   = clean.lastIndexOf('}') + 1;
+  return JSON.parse(clean.slice(start, end));
+}
+
+// ═══════════════════════════════════════
+// メイン処理
+// ═══════════════════════════════════════
+async function ask() {
+  const question = document.getElementById('questionInput').value.trim();
+  if (!question) return;
+
+  const keys = getKeys();
+  if (!keys.gemini || !keys.openrouter) {
+    showToast('⚙ API設定からAPIキーを入力してください');
+    toggleSettings();
+    return;
+  }
+
+  const btn = document.getElementById('askBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 処理中...';
+
+  document.getElementById('processBar').classList.add('active');
+  document.getElementById('resultCard').classList.remove('visible');
+  resetSteps();
+
+  try {
+    // Step1: 質問分析
+    setStep('step1', 'active');
+    const analysis = await analyzeQuestion(question);
+    setStep('step1', 'done');
+
+    // Step2: モデル選択確定
+    setStep('step2', 'active');
+    const modelKey     = analysis.category || 'general';
+    const searchNeeded = analysis.search_needed && analysis.search_query;
+    await delay(300);
+    setStep('step2', 'done');
+
+    // Step2.5: Web検索（必要な場合）
+    let searchResult = '';
+    if (searchNeeded) {
+      try { searchResult = await searchWeb(analysis.search_query); } catch(e) { console.warn('Web検索失敗:', e); }
+    }
+
+    // Step3: OpenRouterで回答
+    setStep('step3', 'active');
+    const mainAnswer = await getMainAnswer(question, modelKey, searchResult);
+    setStep('step3', 'done');
+
+    // Step4: 矛盾チェック
+    setStep('step4', 'active');
+    const final = await checkAndFinalize(question, mainAnswer, searchResult);
+    setStep('step4', 'done');
+
+    // Step5: 表示
+    setStep('step5', 'active');
+    await delay(200);
+    setStep('step5', 'done');
+
+    renderResult({ analysis, modelKey, searchResult, mainAnswer, final });
+    saveHistory(question, modelKey, final.confidence);
+
+  } catch(e) {
+    console.error(e);
+    showToast('エラー: ' + e.message);
+    resetSteps();
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '回答を生成';
+    document.getElementById('processBar').classList.remove('active');
+  }
+}
+
+// ═══════════════════════════════════════
+// 結果描画
+// ═══════════════════════════════════════
+function renderResult({ analysis, modelKey, searchResult, mainAnswer, final }) {
+  const modelShort = (MODELS[modelKey] || '').split('/').pop().replace(':free','');
+
+  document.getElementById('metaGrid').innerHTML = `
+    <div class="meta-item">
+      <div class="meta-label">カテゴリ</div>
+      <div class="meta-value">${modelKey}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">使用モデル</div>
+      <div class="meta-value" style="font-size:0.75rem">${modelShort}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Web検索</div>
+      <div class="meta-value">${searchResult ? '✓ 実施' : '— なし'}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">判断理由</div>
+      <div class="meta-value" style="font-size:0.78rem">${analysis.reason || '—'}</div>
+    </div>
+  `;
+
+  // 矛盾警告
+  const alertEl = document.getElementById('contradictionAlert');
+  if (final.has_contradiction && final.contradiction_detail) {
+    document.getElementById('contradictionText').textContent = final.contradiction_detail;
+    alertEl.style.display = 'flex';
+  } else {
+    alertEl.style.display = 'none';
+  }
+
+  // 信頼度バッジ
+  const confMap = { high: ['badge-high','信頼度: 高'], medium: ['badge-medium','信頼度: 中'], low: ['badge-low','信頼度: 低'] };
+  const [cls, label] = confMap[final.confidence] || confMap.medium;
+  const badge = document.getElementById('confidenceBadge');
+  badge.className = 'badge ' + cls;
+  badge.textContent = label;
+
+  document.getElementById('finalAnswer').textContent = final.final_answer || mainAnswer;
+  document.getElementById('mainAnswer').textContent  = mainAnswer;
+
+  const suppEl = document.getElementById('supplementBox');
+  if (final.supplement) {
+    suppEl.textContent = '💡 ' + final.supplement;
+    suppEl.style.display = 'block';
+  } else {
+    suppEl.style.display = 'none';
+  }
+
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════
+// 履歴
+// ═══════════════════════════════════════
+let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+function saveHistory(question, category, confidence) {
+  history.unshift({ question, category, confidence, time: new Date().toLocaleString('ja-JP') });
+  history = history.slice(0, 10);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  document.getElementById('historySection').style.display = 'block';
+  document.getElementById('historyList').innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <div class="history-q">${h.question}</div>
+      <div class="history-meta">${h.time} · ${h.category || ''} · ${h.confidence || ''}</div>
+    </div>
+  `).join('');
+}
+
+function loadHistory(i) {
+  document.getElementById('questionInput').value = history[i].question;
+  updateCharCount(document.getElementById('questionInput'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════
+// ユーティリティ
+// ═══════════════════════════════════════
+function updateCharCount(el) {
+  document.getElementById('charCount').textContent = el.value.length + '文字';
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) ask();
+}
+
+function setStep(id, state) {
+  document.getElementById(id).className = 'step ' + state;
+}
+
+function resetSteps() {
+  ['step1','step2','step3','step4','step5'].forEach(id => {
+    document.getElementById(id).className = 'step';
+  });
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// 初期化
+renderHistory();
+</script>
+</body>
+</html>
