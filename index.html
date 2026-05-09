@@ -97,9 +97,8 @@
     border-radius: 12px;
     padding: 1.25rem;
     margin-bottom: 1.5rem;
-    animation: fadeUp 0.2s ease;
   }
-  .settings-panel.open { display: block; }
+  .settings-panel.open { display: block; animation: fadeUp 0.2s ease; }
 
   .settings-row {
     display: flex;
@@ -108,10 +107,7 @@
     align-items: flex-end;
   }
 
-  .settings-field {
-    flex: 1;
-    min-width: 200px;
-  }
+  .settings-field { flex: 1; min-width: 200px; }
   .settings-field label {
     display: block;
     font-size: 0.7rem;
@@ -134,6 +130,16 @@
   }
   .settings-field input:focus { border-color: var(--accent); }
 
+  .settings-note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(124,106,247,0.06);
+    border: 1px solid rgba(124,106,247,0.15);
+    border-radius: 6px;
+  }
+
   .save-btn {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -147,17 +153,6 @@
     white-space: nowrap;
   }
   .save-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .key-status {
-    font-size: 0.72rem;
-    margin-top: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    background: rgba(72,187,120,0.08);
-    border: 1px solid rgba(72,187,120,0.2);
-    color: var(--success);
-    display: none;
-  }
 
   /* 入力エリア */
   .input-section {
@@ -254,8 +249,8 @@
   .step.active .step-dot { animation: pulse 1s infinite; }
 
   /* 結果 */
-  .result-card { display: none; animation: fadeUp 0.4s ease; }
-  .result-card.visible { display: block; }
+  .result-card { display: none; }
+  .result-card.visible { display: block; animation: fadeUp 0.4s ease; }
 
   .card {
     background: var(--surface);
@@ -361,7 +356,6 @@
   .history-q { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .history-meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; }
 
-  /* トースト */
   .toast {
     position: fixed;
     bottom: 1.5rem;
@@ -377,11 +371,6 @@
     animation: fadeUp 0.3s ease;
   }
 
-  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeUp   { from { opacity:0; transform:translateY(12px);  } to { opacity:1; transform:translateY(0); } }
-  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  @keyframes spin     { to { transform: rotate(360deg); } }
-
   .spinner {
     width: 14px; height: 14px;
     border: 2px solid rgba(255,255,255,0.2);
@@ -391,6 +380,11 @@
     display: inline-block;
     vertical-align: middle;
   }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(12px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes spin     { to { transform: rotate(360deg); } }
 
   @media (max-width: 600px) {
     .logo { font-size: 2rem; }
@@ -404,16 +398,16 @@
 
   <header>
     <div class="logo">AI Oracle</div>
-    <div class="tagline">Gemini × OpenRouter · Multi-Model Intelligence</div>
+    <div class="tagline">Gemini（画面操作）× OpenRouter · API不要</div>
   </header>
 
-  <!-- API設定 -->
-  <button class="settings-toggle" onclick="toggleSettings()">⚙ API設定</button>
+  <!-- 設定 -->
+  <button class="settings-toggle" onclick="toggleSettings()">⚙ 設定</button>
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-row">
       <div class="settings-field">
-        <label>Gemini API Key</label>
-        <input type="password" id="geminiKey" placeholder="AIza...">
+        <label>サーバーURL（MacのIPアドレス）</label>
+        <input type="text" id="serverUrl" placeholder="http://192.168.1.30:8001">
       </div>
       <div class="settings-field">
         <label>OpenRouter API Key</label>
@@ -421,7 +415,9 @@
       </div>
       <button class="save-btn" onclick="saveSettings()">保存</button>
     </div>
-    <div class="key-status" id="keyStatus">✓ APIキーが保存されています</div>
+    <div class="settings-note">
+      💡 GeminiはMac上のPlaywrightが自動操作します。Gemini APIキーは不要です。
+    </div>
   </div>
 
   <!-- 入力 -->
@@ -429,7 +425,7 @@
     <div class="input-label">質問を入力　（Cmd+Enter で送信）</div>
     <textarea
       id="questionInput"
-      placeholder="何でも聞いてください。Geminiが最適なAIを選んで回答します..."
+      placeholder="何でも聞いてください。GeminiとOpenRouterが連携して回答します..."
       oninput="updateCharCount(this)"
       onkeydown="handleKeydown(event)"
     ></textarea>
@@ -442,10 +438,10 @@
   <!-- プロセス -->
   <div class="process-bar" id="processBar">
     <div class="process-steps">
-      <div class="step" id="step1"><div class="step-dot"></div>質問分析</div>
+      <div class="step" id="step1"><div class="step-dot"></div>Gemini分析中</div>
       <div class="step" id="step2"><div class="step-dot"></div>モデル選択</div>
-      <div class="step" id="step3"><div class="step-dot"></div>AI回答生成</div>
-      <div class="step" id="step4"><div class="step-dot"></div>矛盾チェック</div>
+      <div class="step" id="step3"><div class="step-dot"></div>OpenRouter回答生成</div>
+      <div class="step" id="step4"><div class="step-dot"></div>Gemini矛盾チェック</div>
       <div class="step" id="step5"><div class="step-dot"></div>最終出力</div>
     </div>
   </div>
@@ -466,7 +462,7 @@
     </div>
     <details style="margin-bottom:1rem">
       <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted);padding:0.5rem 0">
-        AIの元回答を表示
+        OpenRouterの元回答を表示
       </summary>
       <div class="card" style="margin-top:0.5rem;border-color:rgba(255,255,255,0.05)">
         <div class="card-title" style="margin-bottom:0.75rem">OpenRouter 生回答</div>
@@ -484,189 +480,43 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════
-// 設定・APIキー管理
-// ═══════════════════════════════════════
-const STORAGE_KEY = 'ai_oracle_keys';
-const HISTORY_KEY = 'ai_oracle_history';
+const STORAGE_KEY    = 'ai_oracle_settings';
+const HISTORY_KEY    = 'ai_oracle_history';
+let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
 
-// OpenRouterの無料モデル
-const MODELS = {
-  general:   'meta-llama/llama-4-maverick:free',
-  reasoning: 'deepseek/deepseek-r1:free',
-  japanese:  'google/gemma-3-27b-it:free',
-  code:      'qwen/qwen3-14b:free',
-  fast:      'mistralai/mistral-small-3.1-24b-instruct:free',
-};
-
-function getKeys() {
+function getSettings() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
 }
 
 function toggleSettings() {
   const panel = document.getElementById('settingsPanel');
   panel.classList.toggle('open');
-  const keys = getKeys();
-  if (keys.gemini)      document.getElementById('geminiKey').value = keys.gemini;
-  if (keys.openrouter)  document.getElementById('openrouterKey').value = keys.openrouter;
-  const status = document.getElementById('keyStatus');
-  status.style.display = (keys.gemini && keys.openrouter) ? 'block' : 'none';
+  const s = getSettings();
+  if (s.serverUrl)     document.getElementById('serverUrl').value = s.serverUrl;
+  if (s.openrouter)    document.getElementById('openrouterKey').value = s.openrouter;
 }
 
 function saveSettings() {
-  const keys = {
-    gemini:     document.getElementById('geminiKey').value.trim(),
-    openrouter: document.getElementById('openrouterKey').value.trim(),
+  const s = {
+    serverUrl:   document.getElementById('serverUrl').value.trim(),
+    openrouter:  document.getElementById('openrouterKey').value.trim(),
   };
-  if (!keys.gemini || !keys.openrouter) {
-    showToast('両方のAPIキーを入力してください');
+  if (!s.serverUrl || !s.openrouter) {
+    showToast('両方の項目を入力してください');
     return;
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   document.getElementById('settingsPanel').classList.remove('open');
-  showToast('✓ APIキーを保存しました');
+  showToast('✓ 設定を保存しました');
 }
 
-// ═══════════════════════════════════════
-// Gemini API呼び出し（直接）
-// ═══════════════════════════════════════
-async function callGemini(prompt, useGrounding = false) {
-  const { gemini } = getKeys();
-  const model = 'gemini-2.0-flash';
-  const url   = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini}`;
-
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
-  };
-  if (useGrounding) body.tools = [{ googleSearch: {} }];
-
-  const res  = await fetch(url, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`Gemini APIエラー: ${res.status}`);
-  const data = await res.json();
-  return data.candidates[0].content.parts.map(p => p.text || '').join('').trim();
-}
-
-// ═══════════════════════════════════════
-// OpenRouter API呼び出し（直接）
-// ═══════════════════════════════════════
-async function callOpenRouter(prompt, modelKey) {
-  const { openrouter } = getKeys();
-  const model = MODELS[modelKey] || MODELS.general;
-
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method:  'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${openrouter}`,
-      'HTTP-Referer':  window.location.href,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2048,
-      temperature: 0.3,
-    }),
-  });
-  if (!res.ok) throw new Error(`OpenRouter APIエラー: ${res.status}`);
-  const data = await res.json();
-  return data.choices[0].message.content.trim();
-}
-
-// ═══════════════════════════════════════
-// Step1: Geminiが質問を分析
-// ═══════════════════════════════════════
-async function analyzeQuestion(question) {
-  const prompt = `以下の質問を分析して最適なAIモデルを選んでください。
-
-質問: ${question}
-
-以下のJSON形式のみで返してください（説明不要）:
-{
-  "category": "general/reasoning/japanese/code/fast のいずれか",
-  "reason": "選んだ理由（20文字以内）",
-  "search_needed": true/false,
-  "search_query": "Web検索が必要な場合の検索ワード（不要な場合は空文字）"
-}
-
-カテゴリの基準:
-- general: 一般的な質問・知識
-- reasoning: 論理・数学・分析
-- japanese: 日本語・文化・ビジネス文書
-- code: プログラミング・技術
-- fast: 簡単な質問・要約`;
-
-  const text  = await callGemini(prompt);
-  const clean = text.replace(/```json|```/g, '').trim();
-  const start = clean.indexOf('{');
-  const end   = clean.lastIndexOf('}') + 1;
-  return JSON.parse(clean.slice(start, end));
-}
-
-// ═══════════════════════════════════════
-// Step2: Web検索（Gemini Grounding）
-// ═══════════════════════════════════════
-async function searchWeb(query) {
-  return await callGemini(
-    `以下について最新情報を検索して要約してください: ${query}`,
-    true
-  );
-}
-
-// ═══════════════════════════════════════
-// Step3: OpenRouterでメイン回答
-// ═══════════════════════════════════════
-async function getMainAnswer(question, modelKey, searchResult) {
-  const context = searchResult ? `\n\n参考情報（Web検索結果）:\n${searchResult}` : '';
-  return await callOpenRouter(
-    `以下の質問に対して正確で詳しい回答をしてください。${context}\n\n質問: ${question}\n\n回答は日本語でお願いします。`,
-    modelKey
-  );
-}
-
-// ═══════════════════════════════════════
-// Step4: Geminiで矛盾チェック・最終回答
-// ═══════════════════════════════════════
-async function checkAndFinalize(question, answer, searchResult) {
-  const prompt = `以下の質問と回答を精査してください。
-
-質問: ${question}
-
-AI回答:
-${answer}
-
-${searchResult ? `参考情報（Web検索）:\n${searchResult}` : ''}
-
-以下のJSON形式のみで返してください:
-{
-  "has_contradiction": true/false,
-  "contradiction_detail": "矛盾点の説明（なければ空文字）",
-  "confidence": "high/medium/low",
-  "final_answer": "矛盾を修正した最終回答（矛盾がなければ元の回答をそのまま）",
-  "supplement": "補足情報があれば（なければ空文字）"
-}`;
-
-  const text  = await callGemini(prompt);
-  const clean = text.replace(/```json|```/g, '').trim();
-  const start = clean.indexOf('{');
-  const end   = clean.lastIndexOf('}') + 1;
-  return JSON.parse(clean.slice(start, end));
-}
-
-// ═══════════════════════════════════════
-// メイン処理
-// ═══════════════════════════════════════
 async function ask() {
   const question = document.getElementById('questionInput').value.trim();
   if (!question) return;
 
-  const keys = getKeys();
-  if (!keys.gemini || !keys.openrouter) {
-    showToast('⚙ API設定からAPIキーを入力してください');
+  const s = getSettings();
+  if (!s.serverUrl || !s.openrouter) {
+    showToast('⚙ 設定からサーバーURLとAPIキーを入力してください');
     toggleSettings();
     return;
   }
@@ -680,41 +530,36 @@ async function ask() {
   resetSteps();
 
   try {
-    // Step1: 質問分析
     setStep('step1', 'active');
-    const analysis = await analyzeQuestion(question);
-    setStep('step1', 'done');
 
-    // Step2: モデル選択確定
+    const res = await fetch(`${s.serverUrl}/ask`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question,
+        openrouter_key: s.openrouter,
+      }),
+    });
+
+    setStep('step1', 'done');
     setStep('step2', 'active');
-    const modelKey     = analysis.category || 'general';
-    const searchNeeded = analysis.search_needed && analysis.search_query;
     await delay(300);
     setStep('step2', 'done');
-
-    // Step2.5: Web検索（必要な場合）
-    let searchResult = '';
-    if (searchNeeded) {
-      try { searchResult = await searchWeb(analysis.search_query); } catch(e) { console.warn('Web検索失敗:', e); }
-    }
-
-    // Step3: OpenRouterで回答
     setStep('step3', 'active');
-    const mainAnswer = await getMainAnswer(question, modelKey, searchResult);
+    await delay(300);
     setStep('step3', 'done');
-
-    // Step4: 矛盾チェック
     setStep('step4', 'active');
-    const final = await checkAndFinalize(question, mainAnswer, searchResult);
-    setStep('step4', 'done');
 
-    // Step5: 表示
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || '不明なエラー');
+
+    setStep('step4', 'done');
     setStep('step5', 'active');
     await delay(200);
     setStep('step5', 'done');
 
-    renderResult({ analysis, modelKey, searchResult, mainAnswer, final });
-    saveHistory(question, modelKey, final.confidence);
+    renderResult(data);
+    saveHistory(question, data.analysis?.category, data.confidence);
 
   } catch(e) {
     console.error(e);
@@ -727,53 +572,61 @@ async function ask() {
   }
 }
 
-// ═══════════════════════════════════════
-// 結果描画
-// ═══════════════════════════════════════
-function renderResult({ analysis, modelKey, searchResult, mainAnswer, final }) {
-  const modelShort = (MODELS[modelKey] || '').split('/').pop().replace(':free','');
+const MODELS = {
+  general:   'llama-4-maverick',
+  reasoning: 'deepseek-r1',
+  japanese:  'gemma-3-27b',
+  code:      'qwen3-14b',
+  fast:      'mistral-small',
+};
+
+function renderResult(data) {
+  const { analysis, main_answer, has_contradiction, contradiction,
+          confidence, final_answer, supplement } = data;
 
   document.getElementById('metaGrid').innerHTML = `
     <div class="meta-item">
       <div class="meta-label">カテゴリ</div>
-      <div class="meta-value">${modelKey}</div>
+      <div class="meta-value">${analysis?.category || '—'}</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">使用モデル</div>
-      <div class="meta-value" style="font-size:0.75rem">${modelShort}</div>
+      <div class="meta-value" style="font-size:0.75rem">${MODELS[analysis?.category] || '—'}</div>
     </div>
     <div class="meta-item">
-      <div class="meta-label">Web検索</div>
-      <div class="meta-value">${searchResult ? '✓ 実施' : '— なし'}</div>
+      <div class="meta-label">Gemini</div>
+      <div class="meta-value">画面操作</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">判断理由</div>
-      <div class="meta-value" style="font-size:0.78rem">${analysis.reason || '—'}</div>
+      <div class="meta-value" style="font-size:0.78rem">${analysis?.reason || '—'}</div>
     </div>
   `;
 
-  // 矛盾警告
   const alertEl = document.getElementById('contradictionAlert');
-  if (final.has_contradiction && final.contradiction_detail) {
-    document.getElementById('contradictionText').textContent = final.contradiction_detail;
+  if (has_contradiction && contradiction) {
+    document.getElementById('contradictionText').textContent = contradiction;
     alertEl.style.display = 'flex';
   } else {
     alertEl.style.display = 'none';
   }
 
-  // 信頼度バッジ
-  const confMap = { high: ['badge-high','信頼度: 高'], medium: ['badge-medium','信頼度: 中'], low: ['badge-low','信頼度: 低'] };
-  const [cls, label] = confMap[final.confidence] || confMap.medium;
+  const confMap = {
+    high:   ['badge-high',   '信頼度: 高'],
+    medium: ['badge-medium', '信頼度: 中'],
+    low:    ['badge-low',    '信頼度: 低'],
+  };
+  const [cls, label] = confMap[confidence] || confMap.medium;
   const badge = document.getElementById('confidenceBadge');
   badge.className = 'badge ' + cls;
   badge.textContent = label;
 
-  document.getElementById('finalAnswer').textContent = final.final_answer || mainAnswer;
-  document.getElementById('mainAnswer').textContent  = mainAnswer;
+  document.getElementById('finalAnswer').textContent = final_answer || main_answer;
+  document.getElementById('mainAnswer').textContent  = main_answer;
 
   const suppEl = document.getElementById('supplementBox');
-  if (final.supplement) {
-    suppEl.textContent = '💡 ' + final.supplement;
+  if (supplement) {
+    suppEl.textContent = '💡 ' + supplement;
     suppEl.style.display = 'block';
   } else {
     suppEl.style.display = 'none';
@@ -782,11 +635,6 @@ function renderResult({ analysis, modelKey, searchResult, mainAnswer, final }) {
   document.getElementById('resultCard').classList.add('visible');
   document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-
-// ═══════════════════════════════════════
-// 履歴
-// ═══════════════════════════════════════
-let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
 
 function saveHistory(question, category, confidence) {
   history.unshift({ question, category, confidence, time: new Date().toLocaleString('ja-JP') });
@@ -812,9 +660,6 @@ function loadHistory(i) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ═══════════════════════════════════════
-// ユーティリティ
-// ═══════════════════════════════════════
 function updateCharCount(el) {
   document.getElementById('charCount').textContent = el.value.length + '文字';
 }
@@ -843,7 +688,6 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2500);
 }
 
-// 初期化
 renderHistory();
 </script>
 </body>
