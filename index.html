@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Oracle</title>
+<title>AI Oracle v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -44,7 +44,7 @@
   .container {
     max-width: 860px;
     margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
+    padding: 2rem 1.25rem 4rem;
     position: relative;
     z-index: 1;
   }
@@ -57,7 +57,7 @@
 
   .logo {
     font-family: 'Syne', sans-serif;
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -74,7 +74,7 @@
     margin-top: 0.5rem;
   }
 
-  /* 設定パネル */
+  /* 設定 */
   .settings-toggle {
     background: none;
     border: 1px solid var(--border);
@@ -100,14 +100,6 @@
   }
   .settings-panel.open { display: block; animation: fadeUp 0.2s ease; }
 
-  .settings-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
-
-  .settings-field { flex: 1; min-width: 200px; }
   .settings-field label {
     display: block;
     font-size: 0.7rem;
@@ -130,16 +122,6 @@
   }
   .settings-field input:focus { border-color: var(--accent); }
 
-  .settings-note {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(124,106,247,0.06);
-    border: 1px solid rgba(124,106,247,0.15);
-    border-radius: 6px;
-  }
-
   .save-btn {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -150,11 +132,11 @@
     font-size: 0.8rem;
     padding: 0.6rem 1.2rem;
     transition: all 0.2s;
-    white-space: nowrap;
+    margin-top: 0.75rem;
   }
   .save-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* 入力エリア */
+  /* 入力 */
   .input-section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -218,7 +200,7 @@
   }
   .ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* プロセス表示 */
+  /* プロセス */
   .process-bar {
     display: none;
     background: var(--surface);
@@ -226,10 +208,17 @@
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
+    text-align: center;
   }
   .process-bar.active { display: block; animation: fadeUp 0.3s ease; }
 
-  .process-steps { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .process-text {
+    font-size: 0.82rem;
+    color: var(--accent2);
+    margin-bottom: 0.75rem;
+  }
+
+  .process-steps { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
 
   .step {
     display: flex;
@@ -244,7 +233,6 @@
   }
   .step.active { color: var(--accent2); border-color: var(--accent2); background: rgba(79,209,197,0.08); }
   .step.done   { color: var(--success); border-color: var(--success); background: rgba(72,187,120,0.08); }
-
   .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
   .step.active .step-dot { animation: pulse 1s infinite; }
 
@@ -252,83 +240,147 @@
   .result-card { display: none; }
   .result-card.visible { display: block; animation: fadeUp 0.4s ease; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+  /* 結論カード */
+  .conclusion-card {
+    background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(79,209,197,0.05));
+    border: 1px solid rgba(124,106,247,0.3);
     border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 1rem;
   }
 
-  .card-header {
+  .conclusion-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
   }
 
-  .card-title {
+  .conclusion-title {
     font-family: 'Syne', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--accent);
   }
 
-  .badge {
+  .contradiction-badge {
     font-size: 0.7rem;
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
-    font-weight: 500;
+    background: rgba(252,129,129,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(252,129,129,0.3);
+    display: none;
   }
-  .badge-high   { background: rgba(72,187,120,0.15); color: var(--success); border: 1px solid rgba(72,187,120,0.3); }
-  .badge-medium { background: rgba(246,173,85,0.15); color: var(--warning); border: 1px solid rgba(246,173,85,0.3); }
-  .badge-low    { background: rgba(252,129,129,0.15); color: var(--danger);  border: 1px solid rgba(252,129,129,0.3); }
 
-  .answer-text {
-    font-size: 0.9rem;
+  .conclusion-text {
+    font-size: 0.92rem;
     line-height: 1.8;
     color: var(--text);
     white-space: pre-wrap;
   }
 
-  .meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .meta-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-  }
-  .meta-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
-  .meta-value { font-size: 0.85rem; color: var(--text); font-weight: 500; }
-
-  .contradiction-alert {
+  .contradiction-detail {
     background: rgba(252,129,129,0.08);
-    border: 1px solid rgba(252,129,129,0.3);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    font-size: 0.82rem;
+    border: 1px solid rgba(252,129,129,0.2);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
     color: var(--danger);
+    display: none;
+  }
+
+  /* 使用AIモデル */
+  .models-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .models-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .models-list {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
   }
 
-  .supplement-box {
-    background: rgba(79,209,197,0.06);
-    border: 1px solid rgba(79,209,197,0.2);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    margin-top: 0.75rem;
-    font-size: 0.82rem;
+  .model-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.75rem;
     color: var(--accent2);
+  }
+
+  /* 各AIの回答 */
+  .answers-section { margin-bottom: 1rem; }
+
+  .answers-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    padding-left: 0.25rem;
+  }
+
+  .answer-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  .answer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: var(--surface2);
+  }
+  .answer-header:hover { background: rgba(124,106,247,0.08); }
+
+  .answer-model {
+    font-size: 0.78rem;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .answer-toggle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+
+  .answer-body {
+    display: none;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .answer-body.open { display: block; animation: fadeUp 0.2s ease; }
+
+  .answer-text {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
   }
 
   /* 履歴 */
@@ -369,6 +421,7 @@
     font-size: 0.8rem;
     z-index: 999;
     animation: fadeUp 0.3s ease;
+    white-space: nowrap;
   }
 
   .spinner {
@@ -387,9 +440,7 @@
   @keyframes spin     { to { transform: rotate(360deg); } }
 
   @media (max-width: 600px) {
-    .logo { font-size: 2rem; }
-    .meta-grid { grid-template-columns: 1fr 1fr; }
-    .settings-row { flex-direction: column; }
+    .logo { font-size: 1.8rem; }
   }
 </style>
 </head>
@@ -398,26 +449,17 @@
 
   <header>
     <div class="logo">AI Oracle</div>
-    <div class="tagline">Gemini（画面操作）× OpenRouter · API不要</div>
+    <div class="tagline">Gemini × OpenRouter · Multi-Model Intelligence</div>
   </header>
 
   <!-- 設定 -->
-  <button class="settings-toggle" onclick="toggleSettings()">⚙ 設定</button>
+  <button class="settings-toggle" onclick="toggleSettings()">⚙ サーバー設定</button>
   <div class="settings-panel" id="settingsPanel">
-    <div class="settings-row">
-      <div class="settings-field">
-        <label>サーバーURL（MacのIPアドレス）</label>
-        <input type="text" id="serverUrl" placeholder="http://192.168.1.30:8001">
-      </div>
-      <div class="settings-field">
-        <label>OpenRouter API Key</label>
-        <input type="password" id="openrouterKey" placeholder="sk-or-...">
-      </div>
-      <button class="save-btn" onclick="saveSettings()">保存</button>
+    <div class="settings-field">
+      <label>サーバーURL（MacのIPアドレス）</label>
+      <input type="text" id="serverUrl" placeholder="http://192.168.1.30:8002">
     </div>
-    <div class="settings-note">
-      💡 GeminiはMac上のPlaywrightが自動操作します。Gemini APIキーは不要です。
-    </div>
+    <button class="save-btn" onclick="saveSettings()">保存</button>
   </div>
 
   <!-- 入力 -->
@@ -425,7 +467,7 @@
     <div class="input-label">質問を入力　（Cmd+Enter で送信）</div>
     <textarea
       id="questionInput"
-      placeholder="何でも聞いてください。GeminiとOpenRouterが連携して回答します..."
+      placeholder="何でも聞いてください。複数のAIが回答し、Geminiが結論をまとめます..."
       oninput="updateCharCount(this)"
       onkeydown="handleKeydown(event)"
     ></textarea>
@@ -437,38 +479,41 @@
 
   <!-- プロセス -->
   <div class="process-bar" id="processBar">
+    <div class="process-text">Gemini CLIが処理中です（最大120秒）...</div>
     <div class="process-steps">
-      <div class="step" id="step1"><div class="step-dot"></div>Gemini分析中</div>
-      <div class="step" id="step2"><div class="step-dot"></div>モデル選択</div>
-      <div class="step" id="step3"><div class="step-dot"></div>OpenRouter回答生成</div>
-      <div class="step" id="step4"><div class="step-dot"></div>Gemini矛盾チェック</div>
-      <div class="step" id="step5"><div class="step-dot"></div>最終出力</div>
+      <div class="step" id="step1"><div class="step-dot"></div>質問分析</div>
+      <div class="step" id="step2"><div class="step-dot"></div>OpenRouter呼び出し</div>
+      <div class="step" id="step3"><div class="step-dot"></div>各AI回答取得</div>
+      <div class="step" id="step4"><div class="step-dot"></div>Gemini結論生成</div>
+      <div class="step" id="step5"><div class="step-dot"></div>完了</div>
     </div>
   </div>
 
   <!-- 結果 -->
   <div class="result-card" id="resultCard">
-    <div class="meta-grid" id="metaGrid"></div>
-    <div class="contradiction-alert" id="contradictionAlert" style="display:none">
-      ⚠ <span id="contradictionText"></span>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">最終回答</span>
-        <span class="badge" id="confidenceBadge"></span>
+
+    <!-- 結論 -->
+    <div class="conclusion-card">
+      <div class="conclusion-header">
+        <span class="conclusion-title">🔮 Geminiの結論</span>
+        <span class="contradiction-badge" id="contradictionBadge">⚠ 矛盾あり</span>
       </div>
-      <div class="answer-text" id="finalAnswer"></div>
-      <div class="supplement-box" id="supplementBox" style="display:none"></div>
+      <div class="conclusion-text" id="conclusionText"></div>
+      <div class="contradiction-detail" id="contradictionDetail"></div>
     </div>
-    <details style="margin-bottom:1rem">
-      <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted);padding:0.5rem 0">
-        OpenRouterの元回答を表示
-      </summary>
-      <div class="card" style="margin-top:0.5rem;border-color:rgba(255,255,255,0.05)">
-        <div class="card-title" style="margin-bottom:0.75rem">OpenRouter 生回答</div>
-        <div class="answer-text" id="mainAnswer" style="color:var(--muted)"></div>
-      </div>
-    </details>
+
+    <!-- 使用AIモデル -->
+    <div class="models-card">
+      <div class="models-title">使用したAIモデル</div>
+      <div class="models-list" id="modelsList"></div>
+    </div>
+
+    <!-- 各AIの回答 -->
+    <div class="answers-section">
+      <div class="answers-title">各AIの回答</div>
+      <div id="answersList"></div>
+    </div>
+
   </div>
 
   <!-- 履歴 -->
@@ -480,31 +525,23 @@
 </div>
 
 <script>
-const STORAGE_KEY    = 'ai_oracle_settings';
-const HISTORY_KEY    = 'ai_oracle_history';
+const STORAGE_KEY = 'ai_oracle_v3_settings';
+const HISTORY_KEY = 'ai_oracle_v3_history';
 let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
 
 function getSettings() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"serverUrl":"http://192.168.1.30:8002"}');
 }
 
 function toggleSettings() {
   const panel = document.getElementById('settingsPanel');
   panel.classList.toggle('open');
   const s = getSettings();
-  if (s.serverUrl)     document.getElementById('serverUrl').value = s.serverUrl;
-  if (s.openrouter)    document.getElementById('openrouterKey').value = s.openrouter;
+  document.getElementById('serverUrl').value = s.serverUrl || '';
 }
 
 function saveSettings() {
-  const s = {
-    serverUrl:   document.getElementById('serverUrl').value.trim(),
-    openrouter:  document.getElementById('openrouterKey').value.trim(),
-  };
-  if (!s.serverUrl || !s.openrouter) {
-    showToast('両方の項目を入力してください');
-    return;
-  }
+  const s = { serverUrl: document.getElementById('serverUrl').value.trim() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   document.getElementById('settingsPanel').classList.remove('open');
   showToast('✓ 設定を保存しました');
@@ -515,8 +552,8 @@ async function ask() {
   if (!question) return;
 
   const s = getSettings();
-  if (!s.serverUrl || !s.openrouter) {
-    showToast('⚙ 設定からサーバーURLとAPIキーを入力してください');
+  if (!s.serverUrl) {
+    showToast('⚙ サーバーURLを設定してください');
     toggleSettings();
     return;
   }
@@ -529,37 +566,36 @@ async function ask() {
   document.getElementById('resultCard').classList.remove('visible');
   resetSteps();
 
-  try {
-    setStep('step1', 'active');
+  // ステップを順番に進める
+  setStep('step1', 'active');
+  await delay(2000);
+  setStep('step1', 'done');
+  setStep('step2', 'active');
+  await delay(3000);
+  setStep('step2', 'done');
+  setStep('step3', 'active');
 
+  try {
     const res = await fetch(`${s.serverUrl}/ask`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question,
-        openrouter_key: s.openrouter,
-      }),
+      body: JSON.stringify({ question }),
     });
 
-    setStep('step1', 'done');
-    setStep('step2', 'active');
-    await delay(300);
-    setStep('step2', 'done');
-    setStep('step3', 'active');
-    await delay(300);
     setStep('step3', 'done');
     setStep('step4', 'active');
 
     const data = await res.json();
     if (!data.success) throw new Error(data.error || '不明なエラー');
 
+    await delay(500);
     setStep('step4', 'done');
     setStep('step5', 'active');
-    await delay(200);
+    await delay(300);
     setStep('step5', 'done');
 
     renderResult(data);
-    saveHistory(question, data.analysis?.category, data.confidence);
+    saveHistory(question, data.models_used);
 
   } catch(e) {
     console.error(e);
@@ -572,72 +608,52 @@ async function ask() {
   }
 }
 
-const MODELS = {
-  general:   'llama-4-maverick',
-  reasoning: 'deepseek-r1',
-  japanese:  'gemma-3-27b',
-  code:      'qwen3-14b',
-  fast:      'mistral-small',
-};
-
 function renderResult(data) {
-  const { analysis, main_answer, has_contradiction, contradiction,
-          confidence, final_answer, supplement } = data;
+  // 結論
+  document.getElementById('conclusionText').textContent = data.conclusion || '結論を取得できませんでした';
 
-  document.getElementById('metaGrid').innerHTML = `
-    <div class="meta-item">
-      <div class="meta-label">カテゴリ</div>
-      <div class="meta-value">${analysis?.category || '—'}</div>
-    </div>
-    <div class="meta-item">
-      <div class="meta-label">使用モデル</div>
-      <div class="meta-value" style="font-size:0.75rem">${MODELS[analysis?.category] || '—'}</div>
-    </div>
-    <div class="meta-item">
-      <div class="meta-label">Gemini</div>
-      <div class="meta-value">画面操作</div>
-    </div>
-    <div class="meta-item">
-      <div class="meta-label">判断理由</div>
-      <div class="meta-value" style="font-size:0.78rem">${analysis?.reason || '—'}</div>
-    </div>
-  `;
-
-  const alertEl = document.getElementById('contradictionAlert');
-  if (has_contradiction && contradiction) {
-    document.getElementById('contradictionText').textContent = contradiction;
-    alertEl.style.display = 'flex';
-  } else {
-    alertEl.style.display = 'none';
+  // 矛盾
+  if (data.has_contradiction && data.contradiction_detail) {
+    document.getElementById('contradictionBadge').style.display = 'block';
+    const detail = document.getElementById('contradictionDetail');
+    detail.textContent = '⚠ ' + data.contradiction_detail;
+    detail.style.display = 'block';
   }
 
-  const confMap = {
-    high:   ['badge-high',   '信頼度: 高'],
-    medium: ['badge-medium', '信頼度: 中'],
-    low:    ['badge-low',    '信頼度: 低'],
-  };
-  const [cls, label] = confMap[confidence] || confMap.medium;
-  const badge = document.getElementById('confidenceBadge');
-  badge.className = 'badge ' + cls;
-  badge.textContent = label;
+  // 使用モデル
+  const modelsList = document.getElementById('modelsList');
+  modelsList.innerHTML = (data.models_used || []).map(m =>
+    `<span class="model-badge">${m.split('/').pop()}</span>`
+  ).join('');
 
-  document.getElementById('finalAnswer').textContent = final_answer || main_answer;
-  document.getElementById('mainAnswer').textContent  = main_answer;
-
-  const suppEl = document.getElementById('supplementBox');
-  if (supplement) {
-    suppEl.textContent = '💡 ' + supplement;
-    suppEl.style.display = 'block';
-  } else {
-    suppEl.style.display = 'none';
-  }
+  // 各AIの回答
+  const answersList = document.getElementById('answersList');
+  answersList.innerHTML = (data.answers || []).map((a, i) => `
+    <div class="answer-item">
+      <div class="answer-header" onclick="toggleAnswer(${i})">
+        <span class="answer-model">🤖 ${a.model}</span>
+        <span class="answer-toggle" id="toggle-${i}">▼ 展開</span>
+      </div>
+      <div class="answer-body" id="answer-${i}">
+        <div class="answer-text">${escHtml(a.answer || '回答なし')}</div>
+      </div>
+    </div>
+  `).join('');
 
   document.getElementById('resultCard').classList.add('visible');
   document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function saveHistory(question, category, confidence) {
-  history.unshift({ question, category, confidence, time: new Date().toLocaleString('ja-JP') });
+function toggleAnswer(i) {
+  const body   = document.getElementById(`answer-${i}`);
+  const toggle = document.getElementById(`toggle-${i}`);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  toggle.textContent = isOpen ? '▼ 展開' : '▲ 閉じる';
+}
+
+function saveHistory(question, models) {
+  history.unshift({ question, models, time: new Date().toLocaleString('ja-JP') });
   history = history.slice(0, 10);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   renderHistory();
@@ -649,7 +665,7 @@ function renderHistory() {
   document.getElementById('historyList').innerHTML = history.map((h, i) => `
     <div class="history-item" onclick="loadHistory(${i})">
       <div class="history-q">${h.question}</div>
-      <div class="history-meta">${h.time} · ${h.category || ''} · ${h.confidence || ''}</div>
+      <div class="history-meta">${h.time}</div>
     </div>
   `).join('');
 }
@@ -680,6 +696,10 @@ function resetSteps() {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function showToast(msg) {
   const t = document.createElement('div');
   t.className = 'toast';
@@ -688,6 +708,9 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2500);
 }
 
+// 初期化
+const savedSettings = getSettings();
+document.getElementById('serverUrl') && (document.getElementById('serverUrl').value = savedSettings.serverUrl || '');
 renderHistory();
 </script>
 </body>
